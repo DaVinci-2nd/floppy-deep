@@ -1,27 +1,24 @@
 #include "FloppyDeep.h"
-#include <stdio.h>
+#include "editor.h"
 
-// 主程序入口 Main program entry
-int main(int argc, char* argv[]) {
-    // 引擎配置 Engine configuration
-    struct FloppyDeepConfig config = {
-        .window_width = 800,
-        .window_height = 600,
-        .window_title = "Floppy Deep Engine",
-        .enable_logging = true
-    };
+int main(int argc, char* argv[])
+{
+    //程序模式开关 Program mode switch
+    //1为编辑器模式，0为引擎游戏模式 1 for editor mode, 0 for engine game mode
+    const int LAUNCH_EDITOR = 1;
 
-    // 初始化引擎 Initialize engine
-    if (!FloppyDeep_Init(&config)) {
-        fprintf(stderr, "Failed to initialize Floppy Deep Engine.\n");
-        return 1;
+    //初始化编辑器模块 Initialize editor module
+    Editor_Init();
+
+    //编辑器主循环 Editor main loop
+    while (Editor_IsRunning())
+    {
+        Editor_RunFrame();
     }
 
-    // 运行引擎主循环 Run engine main loop
-    FloppyDeep_Run();
+    //关闭编辑器模块 Shutdown editor module
+    Editor_Shutdown();
 
-    // 关闭引擎 Shutdown engine
-    FloppyDeep_Shutdown();
-
+    //程序退出 Program exit
     return 0;
 }
