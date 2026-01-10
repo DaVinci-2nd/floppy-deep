@@ -1,0 +1,43 @@
+#编译输出 Compilation outputs
+build/
+Debug/
+Release/
+*.exe
+*.out
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+
+#IDE配置 IDE configuration
+*.layout
+*.depend
+
+#操作系统文件 Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+#编辑器临时文件 Editor temporary files
+*.swp
+*~
+*.bak
+*.swo
+*.vs/
+.vscode/
+
+#日志和临时文件 Log and temporary files
+*.log
+*.tmp
+*.temp
+
+#预编译头文件 Precompiled headers
+*.pch
+*.gch
+
+#依赖文件 Dependency files
+*.d
+*.dll.a
