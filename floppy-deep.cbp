@@ -40,6 +40,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/FloppyDeep.h" />
+		<Unit filename="src/editor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/editor.h" />
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -47,6 +51,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/platform.h" />
+		<Unit filename="src/render.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/render.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>

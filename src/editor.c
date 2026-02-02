@@ -1,90 +1,126 @@
-#include "editor.h"
-#include "platform.h"
-#include <stddef.h>
+//可视化编辑器
+#include <windows.h>
 
-//在Windows平台包含必要的头文件 Include necessary headers for Windows platform
-#ifdef PLATFORM_WINDOWS
-    #define WIN32_LEAN_AND_MEAN
-    #include <windows.h>
-#endif
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+void UpdateChildWindows(HWND hwnd);
+HWND objectsWindow;
+HWND sceneWindow;
+HWND catalogWindow;
+HWND fileWindow;
 
-//编辑器内部状态 Editor Internal State
-static struct {
-    bool is_initialized;
-    bool is_running;
-    struct PlatformWindow* window;
-#ifdef PLATFORM_WINDOWS
-    HMENU hMenuBar; //Windows菜单栏句柄 Windows menu bar handle
-#endif
-} g_editor;
+void create_editor_window()
+{
+    WNDCLASS wc = {0};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = GetModuleHandle(NULL);
+    wc.lpszClassName = "EditorWindowClass";
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+    RegisterClass(&wc);
 
-bool Editor_Init(void) {
-    //初始化平台层 Initialize platform layer
-    platform_init();
-    //设置窗口参数 Set window parameters
-    struct WindowDesc desc;
-    desc.width = 800;
-    desc.height = 600;
-    desc.title = "Floppy Deep Editor";
-    //创建窗口 Create window
-    g_editor.window = window_create(&desc);
-    //创建菜单栏 Create menu bar
-#ifdef PLATFORM_WINDOWS
+    //主窗口
+    HWND hwnd = CreateWindow
+    (
+        "EditorWindowClass",
+        "Floppy Deep Editor",
+        WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+        CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720,
+        NULL, NULL, wc.hInstance, NULL
+    );
+
+    // 菜单栏
+    HMENU hMenuBar = CreateMenu();
+    HMENU hFileMenu = CreatePopupMenu();
+    HMENU hEditMenu = CreatePopupMenu();
+    HMENU hAboutMenu = CreatePopupMenu();
+
+    AppendMenu(hFileMenu, MF_STRING, 1001, "Open");
+    AppendMenu(hFileMenu, MF_STRING, 1002, "Save");
+    AppendMenu(hFileMenu, MF_SEPARATOR, 0, NULL);
+    AppendMenu(hFileMenu, MF_STRING, 1003, "Quite");
+
+    AppendMenu(hEditMenu, MF_STRING, 2001, "Revoke");
+    AppendMenu(hEditMenu, MF_STRING, 2002, "Redo");
+
+    AppendMenu(hAboutMenu, MF_STRING, 3001, "Info");
+    AppendMenu(hAboutMenu, MF_STRING, 3002, "Help");
+
+    AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFileMenu, "File");
+    AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hEditMenu, "Edit");
+    AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hAboutMenu, "About");
+
+    // 设置菜单栏
+    SetMenu(hwnd, hMenuBar);
+
+    RECT rcClient;
+    GetClientRect(hwnd, &rcClient);
+    int clientWidth = rcClient.right - rcClient.left;
+    int clientHeight = rcClient.bottom - rcClient.top;
+
+    //子窗口
+    objectsWindow = CreateWindow(
+        "STATIC",
+        "Objects",
+        WS_CHILD | WS_VISIBLE | WS_BORDER,
+        0, 0, 100, 100,
+        hwnd, NULL, wc.hInstance, NULL
+    );
+
+    sceneWindow = CreateWindow
+    (
+        "STATIC",
+        "Scene",
+        WS_CHILD | WS_VISIBLE | WS_BORDER,
+        0, 0, 100, 100,
+        hwnd, NULL, wc.hInstance, NULL
+    );
+
+    catalogWindow = CreateWindow
+    (
+        "STATIC",
+        "Catalog",
+        WS_CHILD | WS_VISIBLE | WS_BORDER,
+        0, 0, 100, 100,
+        hwnd, NULL, wc.hInstance, NULL
+    );
+
+    fileWindow = CreateWindow
+    (
+        "STATIC",
+        "File",
+        WS_CHILD | WS_VISIBLE | WS_BORDER,
+        0, 0, 100, 100,
+        hwnd, NULL, wc.hInstance, NULL
+    );
+
+    UpdateChildWindows(hwnd);
+
+    ShowWindow(hwnd, SW_SHOW);
+    UpdateWindow(hwnd);
+}
+
+void UpdateChildWindows(HWND hwnd)
+{
+    RECT rc;
+    GetClientRect(hwnd, &rc);
+    int w = rc.right;
+    int h = rc.bottom;
+
+    MoveWindow(objectsWindow, 0, 0, w/3, h/2, TRUE);
+    MoveWindow(sceneWindow, w/3, 0, w*2/3, h/2, TRUE);
+    MoveWindow(catalogWindow, 0, h/2, w/3, h/2, TRUE);
+    MoveWindow(fileWindow, w/3, h/2, w*2/3, h/2, TRUE);
+}
+
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+ {
+    switch(uMsg)
     {
-        //Windows菜单创建 Windows menu creation
-        HMENU hMenuBar = CreateMenu();
-        HMENU hFileMenu = CreatePopupMenu();
-        HMENU hEditMenu = CreatePopupMenu();
-        HMENU hAboutMenu = CreatePopupMenu();
-
-        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hFileMenu, "File");
-        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hEditMenu, "Edit");
-        AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)hAboutMenu, "About");
-
-        //使用新函数获取窗口句柄 Use new function to get window handle
-        HWND hwnd = (HWND)window_get_hwnd(g_editor.window);
-        SetMenu(hwnd, hMenuBar);
-        g_editor.hMenuBar = hMenuBar;
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+        case WM_SIZE:
+            UpdateChildWindows(hwnd);
+        default:
+            return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
-#endif
-    //设置编辑器状态 Set editor state
-    g_editor.is_initialized = true;
-    g_editor.is_running = true;
-    //返回初始化成功 Return initialization success
-    return true;
-}
-
-void Editor_Shutdown(void) {
-    if (!g_editor.is_initialized) {
-        return;
-    }
-    //销毁菜单栏 Destroy menu bar
-#ifdef PLATFORM_WINDOWS
-    if (g_editor.hMenuBar) {
-        DestroyMenu(g_editor.hMenuBar);
-        g_editor.hMenuBar = NULL;
-    }
-#endif
-    //销毁窗口 Destroy window
-    if (g_editor.window) {
-        window_destroy(g_editor.window);
-        g_editor.window = NULL;
-    }
-    //重置编辑器状态 Reset editor state
-    g_editor.is_initialized = false;
-    g_editor.is_running = false;
-}
-
-void Editor_RunFrame(void) {
-    if (!g_editor.is_initialized || !g_editor.is_running) {
-        return;
-    }
-    //处理窗口事件 Process window events
-    if (!window_process_events(g_editor.window)) {
-        g_editor.is_running = false;
-    }
-}
-
-bool Editor_IsRunning(void) {
-    return g_editor.is_running;
 }
