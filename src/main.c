@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <plutovg.h>
 
 void create_editor_window();
 

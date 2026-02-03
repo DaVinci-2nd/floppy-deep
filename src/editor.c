@@ -1,5 +1,8 @@
 //¿ÉÊÓ»¯±à¼­Æ÷
 #include <windows.h>
+#include <stdio.h>
+#include <plutovg.h>
+#include "../res/graphics.h"
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void UpdateChildWindows(HWND hwnd);
@@ -60,7 +63,7 @@ void create_editor_window()
     objectsWindow = CreateWindow(
         "STATIC",
         "Objects",
-        WS_CHILD | WS_VISIBLE | WS_BORDER,
+        WS_CHILD | WS_VISIBLE | WS_BORDER | WS_CAPTION,
         0, 0, 100, 100,
         hwnd, NULL, wc.hInstance, NULL
     );
@@ -69,7 +72,7 @@ void create_editor_window()
     (
         "STATIC",
         "Scene",
-        WS_CHILD | WS_VISIBLE | WS_BORDER,
+        WS_CHILD | WS_VISIBLE | WS_BORDER | WS_CAPTION,
         0, 0, 100, 100,
         hwnd, NULL, wc.hInstance, NULL
     );
@@ -78,7 +81,7 @@ void create_editor_window()
     (
         "STATIC",
         "Catalog",
-        WS_CHILD | WS_VISIBLE | WS_BORDER,
+        WS_CHILD | WS_VISIBLE | WS_BORDER | WS_CAPTION,
         0, 0, 100, 100,
         hwnd, NULL, wc.hInstance, NULL
     );
@@ -87,7 +90,7 @@ void create_editor_window()
     (
         "STATIC",
         "File",
-        WS_CHILD | WS_VISIBLE | WS_BORDER,
+        WS_CHILD | WS_VISIBLE | WS_BORDER | WS_CAPTION,
         0, 0, 100, 100,
         hwnd, NULL, wc.hInstance, NULL
     );
@@ -111,16 +114,39 @@ void UpdateChildWindows(HWND hwnd)
     MoveWindow(fileWindow, w/3, h/2, w*2/3, h/2, TRUE);
 }
 
+    void DrawSceneDebug(plutovg_canvas_t* canvas)
+    {
+        plutovg_canvas_set_rgb(canvas, 0.5, 0.5, 0.5);
+        plutovg_canvas_paint(canvas);
+        plutovg_canvas_set_rgb(canvas, 1.0, 0.0, 0.0);
+        plutovg_canvas_rect(canvas, 50, 50, 100, 100);
+        plutovg_canvas_fill(canvas);
+        plutovg_canvas_set_rgb(canvas, 0.0, 1.0, 0.0);
+        plutovg_canvas_arc(canvas, 200, 150, 50, 0, 6.2831853, 0);
+        plutovg_canvas_fill(canvas);
+    }
+
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
  {
+     static GraphicsContext* sceneGraphics = NULL;
     switch(uMsg)
     {
-        case WM_DESTROY:
-            PostQuitMessage(0);
+        case WM_CREATE:
+            UpdateChildWindows(hwnd);
+            sceneGraphics = Graphics_Create(sceneWindow);
+            SetTimer(hwnd, 1, 16, NULL);
+            break;
+        case WM_TIMER:
+            Graphics_Execute(sceneWindow, sceneGraphics, DrawSceneDebug);
             return 0;
         case WM_SIZE:
             UpdateChildWindows(hwnd);
+            return 0;
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
+
 }
