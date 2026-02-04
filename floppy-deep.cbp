@@ -35,8 +35,18 @@
 		</Build>
 		<Compiler>
 			<Add option="-std=c99" />
+			<Add option="-DPLUTOVG_BUILD_STATIC" />
+			<Add directory="D:/MyProjects/floppy-deep/plutovg/include" />
 		</Compiler>
+		<Linker>
+			<Add option="-lm" />
+			<Add library="plutovg/lib/libplutovg.a" />
+		</Linker>
+		<Unit filename="res/graphics.h" />
 		<Unit filename="src/editor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/graphics.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/main.c">

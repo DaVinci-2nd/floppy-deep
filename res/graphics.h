@@ -1,17 +1,14 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 #include <windows.h>
+#include <plutovg.h>
 
 typedef struct {
-    void* surface;
-    void* canvas;
-    HBITMAP hBitmap;
-    HDC hMemDC;
+    plutovg_surface_t* surface;
+    plutovg_canvas_t* canvas;
     int width;
     int height;
-    void* userData;
 } GraphicsContext;
-
 // ¿ò¼Üº¯Êý
 GraphicsContext* Graphics_Create(HWND hwnd);
 void Graphics_Resize(GraphicsContext* ctx, int width, int height);
